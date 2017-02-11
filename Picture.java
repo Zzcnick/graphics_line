@@ -5,8 +5,12 @@ public class Picture {
 
     public static void main(String[] args) throws FileNotFoundException {
 	
+	// Lines
+	Canvas c = new Canvas(500, 500);
+	c.line(10, 200, 300, 400);
+	c.save("out.ppm");
+	// */
 	
-
 	/* // Green Mountains
 	Canvas c = new Canvas(1000, 500, 16, 0, 32);
 	for (int y = 20; y < 500; y += 10) {
@@ -20,7 +24,7 @@ public class Picture {
 	    }
 	}
 	c.save("out.ppm");
-	*/
+	// */
     }
 }
 
@@ -63,7 +67,6 @@ class Canvas {
     }
 
     // Canvas Methods
-
     public boolean draw_pixel(int x, int y, Pixel p) {
 	canvas[y][x] = p;
 	return true;
@@ -84,6 +87,26 @@ class Canvas {
 	return fill(new Pixel(R, G, B));
     }
    
+    public boolean line(int x1, int y1, int x2, int y2) {
+	Pixel p = new Pixel(0, 0, 0);
+	int A = y2 - y1;
+	int B = x1 - x2;
+	int d = 2 * A + B;
+	A = 2 * A;
+	B = 2 * B;
+	while (x1 <= x2) {
+	    draw_pixel(x1, y1, p);
+	    if (d > 0) {
+		y1++;
+		d += B;
+	    }
+	    x1++;
+	    d += A;
+	}
+	return true;
+    }
+
+    // Other Designs
     public boolean triangle(int x, int y, Pixel p) {
 	int layer = 0;
 	while (y < this.y) {
