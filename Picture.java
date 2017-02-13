@@ -9,12 +9,17 @@ public class Picture {
 	Canvas c = new Canvas(500, 500, 0, 0, 0);
 
 	/*
+	c = new Canvas();
+	c.line(250, 250, 400, 250); // +x
 	c.line(250, 250, 350, 300); // 1
 	c.line(250, 250, 300, 350); // 2
+	c.line(250, 250, 250, 400); // +y
 	c.line(250, 250, 200, 350); // 3
 	c.line(250, 250, 150, 300); // 4
+	c.line(250, 250, 100, 250); // -x
 	c.line(250, 250, 150, 200); // 5
 	c.line(250, 250, 200, 150); // 6
+	c.line(250, 250, 250, 100); // -y
 	c.line(250, 250, 300, 150); // 7
 	c.line(250, 250, 350, 200); // 8
 	*/
@@ -148,7 +153,7 @@ class Canvas {
 	int d = -2 * B + A;
 	A = 2 * A;
 	B = -2 * B;
-	while (y1 > y2) {
+	while (y1 >= y2) {
 	    draw_pixel(x1, y1, p);
 	    if (d > 0) {
 		x1++;
@@ -165,7 +170,7 @@ class Canvas {
 	int d = 2 * B + A;
 	A = 2 * A;
 	B = 2 * B;
-	while (y1 < y2) {
+	while (y1 <= y2) {
 	    draw_pixel(x1, y1, p);
 	    if (d < 0) {
 		x1++;
