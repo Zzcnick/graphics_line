@@ -4,19 +4,52 @@ import java.util.*;
 public class Picture {
 
     public static void main(String[] args) throws FileNotFoundException {
-	
-	// Lines
-	Canvas c = new Canvas(500, 500);
-	c.line(10, 200, 300, 400);
+
+	// Lines ==============================
+	Canvas c = new Canvas(500, 500, 0, 0, 0);
+
+	/*
+	c.line(250, 250, 350, 300); // 1
+	c.line(250, 250, 300, 350); // 2
+	c.line(250, 250, 200, 350); // 3
+	c.line(250, 250, 150, 300); // 4
+	c.line(250, 250, 150, 200); // 5
+	c.line(250, 250, 200, 150); // 6
+	c.line(250, 250, 300, 150); // 7
+	c.line(250, 250, 350, 200); // 8
+	*/
+
+	Pixel p = new Pixel(18, 10, 143);
+	int x1, y1, x2, y2;
+	for (int i = 0; i < 500; i += 5) {
+	    x1 = i; y1 = 499;
+	    x2 = 499; y2 = 499 - i;
+	    c.line(x1, y1, x2, y2, p);
+	}
+	for (int i = 0; i < 500; i += 10) {
+	    x1 = 499; y1 = 499 - i;
+	    x2 = 499 - i; y2 = 0;
+	    c.line(x1, y1, x2, y2, p);
+	}
+	for (int i = 0; i < 500; i += 15) {
+	    x1 = 499 - i; y1 = 0;
+	    x2 = 0; y2 = i;
+	    c.line(x1, y1, x2, y2, p);
+	}
+	for (int i = 0; i < 500; i += 20) {
+	    x1 = 0; y1 = i;
+	    x2 = i; y2 = 499;
+	    c.line(x1, y1, x2, y2, p);
+	}
 	c.save("out.ppm");
-	// */
+	// ==================================== */
 	
-	/* // Green Mountains
+	/* // Green Mountains =================
 	Canvas c = new Canvas(1000, 500, 16, 0, 32);
-	for (int y = 20; y < 500; y += 10) {
+	for (int y = 480; y > 0; y -= 10) {
 	    for (int x = 0; x < 1000; x++) {
 		if (Math.random() < 0.005) { // 0.5%
-		    int g = (int)(256 * (y / 500.));
+		    int g = (int)(256 * (1 - y / 500.));
 		    int r = (int)(g * 0.35);
 		    int b = (int)(g * 0.35);
 		    c.triangle(x, y, new Pixel(r, g, b));
@@ -24,7 +57,7 @@ public class Picture {
 	    }
 	}
 	c.save("out.ppm");
-	// */
+	// ==================================== */
     }
 }
 
@@ -34,9 +67,9 @@ class Canvas {
 
     // Constructors
     public Canvas() {
-	canvas = new Pixel[300][600];
-	x = 600;
-	y = 300;
+	canvas = new Pixel[500][500];
+	x = 500;
+	y = 500;
 	fill(255, 255, 255);
     }
     public Canvas(int x, int y) {
@@ -47,7 +80,6 @@ class Canvas {
     }
     public Canvas(int x, int y, Pixel p) {
 	this(x, y);
-	int[] rgb = p.getRGB();
 	fill(p);
     }
     public Canvas(int x, int y, int R, int G, int B) {
@@ -71,6 +103,9 @@ class Canvas {
 	canvas[y][x] = p;
 	return true;
     }
+    public boolean draw_pixel(int x, int y) {
+	return draw_pixel(x, y, new Pixel(0, 0, 0));
+    }
     public boolean draw_pixel(int x, int y, int R, int G, int B) {
 	return draw_pixel(x, y, new Pixel(R, G, B));
     }
@@ -86,11 +121,81 @@ class Canvas {
     public boolean fill(int R, int G, int B) {
 	return fill(new Pixel(R, G, B));
     }
-   
+
+    // Bresenham's Line Algorithm - 8 Octants
     public boolean line(int x1, int y1, int x2, int y2) {
-	Pixel p = new Pixel(0, 0, 0);
-	int A = y2 - y1;
-	int B = x1 - x2;
+	return line(x1, y1, x2, y2, new Pixel(0, 0, 0));
+    }
+    public boolean line(int x1, int y1, int x2, int y2, Pixel p) {
+	if (x2 < x1) return line(x2, y2, x1, y1, p);
+	int dy = y2 > y1 ? y2 - y1 : y1 - y2; // positive difference
+	int dx = x2 - x1; // always positive
+	int m = y2 > y1 ? 1 : -1;
+	if (dy > dx)
+	    if (m > 0)
+		return line2(x1, y1, x2, y2, p); // Vertical - Octant 2
+	    else
+		return line7(x1, y1, x2, y2, p); // Vertical - Octant 7
+	else
+	    if (m > 0)
+		return line1(x1, y1, x2, y2, p); // Horizontal - Octant 1
+	    else
+		return line8(x1, y1, x2, y2, p); // Horizontal - Octant 8
+    }
+    public boolean line7(int x1, int y1, int x2, int y2, Pixel p) {
+	int A = y2 - y1; // dy
+	int B = x1 - x2; // -dx
+	int d = -2 * B + A;
+	A = 2 * A;
+	B = -2 * B;
+	while (y1 > y2) {
+	    draw_pixel(x1, y1, p);
+	    if (d > 0) {
+		x1++;
+		d += A;
+	    }
+	    y1--;
+	    d += B;
+	}
+	return true;
+    }
+    public boolean line2(int x1, int y1, int x2, int y2, Pixel p) {
+	int A = y2 - y1; // dy
+	int B = x1 - x2; // -dx
+	int d = 2 * B + A;
+	A = 2 * A;
+	B = 2 * B;
+	while (y1 < y2) {
+	    draw_pixel(x1, y1, p);
+	    if (d < 0) {
+		x1++;
+		d += A;
+	    }
+	    y1++;
+	    d += B;
+	}
+	return true;
+    }
+    public boolean line8(int x1, int y1, int x2, int y2, Pixel p) {
+	int A = y2 - y1; // dy
+	int B = x1 - x2; // -dx
+	int d = 2 * A - B;
+	A = 2 * A;
+	B = -2 * B;
+	while (x1 <= x2) {
+	    draw_pixel(x1, y1, p);
+	    if (d < 0) {
+		y1--;
+		d += B;
+	    }
+	    x1++;
+	    d += A;
+	}
+	return true;
+    }
+    public boolean line1(int x1, int y1, int x2, int y2, Pixel p) {
+	int A = y2 - y1; // dy
+	int B = x1 - x2; // -dx
 	int d = 2 * A + B;
 	A = 2 * A;
 	B = 2 * B;
@@ -109,11 +214,11 @@ class Canvas {
     // Other Designs
     public boolean triangle(int x, int y, Pixel p) {
 	int layer = 0;
-	while (y < this.y) {
+	while (y > -1) {
 	    for (int i = Math.max(0, x - layer); i < Math.min(x + layer + 1, this.x); i++) {
 		canvas[y][i] = p;
 	    }
-	    layer++; y++;
+	    layer++; y--;
 	}
 	return true;
     }
@@ -122,8 +227,9 @@ class Canvas {
     public boolean save(String name) throws FileNotFoundException {
 	PrintWriter pw = new PrintWriter(new File(name));
 	pw.print("P3 " + x + " " + y + " 255\n"); // Heading
-	for (int i = 0; i < y; i++) {
+	for (int i = y - 1; i > -1; i--) {
 	    for (int j = 0; j < x; j++) {
+		// System.out.printf("x: %d\ty: %d\n", j, i); // Debugging
 		pw.print(canvas[i][j]);
 	    }
 	}
