@@ -1,8 +1,5 @@
 all: Picture.java
-	javac Picture.java
-
-run: Picture.class
-	java Picture
+	javac Picture.java && java Picture
 
 clean: 
 	rm *.class *.ppm *~
